@@ -6,6 +6,8 @@ const PORT = process.env.PORT || 5173
 const root = process.cwd()
 const distDir = join(root, 'dist')
 const indexHtmlPath = join(distDir, 'index.html')
+// Base path used by built assets when Vite base is set (e.g. '/intervu/')
+const BASE_PATH = (process.env.BASE_PATH || '/intervu/').replace(/\/+$/, '/')
 
 const mimeTypes = {
   '.html': 'text/html; charset=utf-8',
@@ -30,9 +32,13 @@ function serveStatic(filePath, res) {
 }
 
 const server = http.createServer((req, res) => {
-  const urlPath = req.url.split('?')[0]
-  const filePath = join(distDir, urlPath)
-  if (existsSync(filePath) && !filePath.endsWith('/')) {
+  const fullPath = decodeURI((req.url || '').split('?')[0] || '/')
+  const urlPath = fullPath.startsWith(BASE_PATH)
+    ? fullPath.slice(BASE_PATH.length - (BASE_PATH.endsWith('/') ? 1 : 0))
+    : fullPath
+  const relativePath = urlPath.replace(/^\/+/, '')
+  const filePath = join(distDir, relativePath)
+  if (relativePath && existsSync(filePath)) {
     return serveStatic(filePath, res)
   }
   const fallback = existsSync(indexHtmlPath)
