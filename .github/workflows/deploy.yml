@@ -1,0 +1,54 @@
+name: Deploy to SFTP + Docker
+
+on:
+  push:
+    branches:
+      - '**'
+
+jobs:
+  sftp-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Dependencies and Build
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build:static
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/intervu:latest
+            ${{ secrets.DOCKER_USERNAME }}/intervu:${{ github.sha }}
+
+      - name: Trigger deploy webhook (Kubernetes rollout)
+        if: github.ref == 'refs/heads/main'
+        env:
+          WEBHOOK_TOKEN: ${{ secrets.VPS_TOKEN }}
+          IMAGE: ${{ secrets.DOCKER_USERNAME }}/intervu:latest
+          VPS_SERVER: ${{ secrets.VPS_SERVER }}
+        run: |
+          curl -sS ${VPS_SERVER}/healthz
+          curl -sS -X POST ${VPS_SERVER}/deploy \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${WEBHOOK_TOKEN}" \
+            -d "{\"deployment\":\"intervu-deployment\",\"namespace\":\"default\",\"container\":\"intervu\",\"image\":\"${IMAGE}\"}"
+
+
