@@ -2,7 +2,7 @@ import http from 'http'
 import { readFileSync, existsSync, createReadStream } from 'fs'
 import { extname, join } from 'path'
 
-const PORT = process.env.PORT || 3000
+const PORT = process.env.PORT || 5173
 const root = process.cwd()
 const distDir = join(root, 'dist')
 const indexHtmlPath = join(distDir, 'index.html')
