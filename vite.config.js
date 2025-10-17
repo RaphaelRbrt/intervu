@@ -5,8 +5,7 @@ import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
-export default defineConfig(({ mode }) => ({
-  base: mode === 'production' ? '/intervu/' : '/',
+export default defineConfig({
   plugins: [
     vue(),
     vueDevTools(),
@@ -16,4 +15,4 @@ export default defineConfig(({ mode }) => ({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
-}))
+})
