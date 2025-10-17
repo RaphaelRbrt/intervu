@@ -13,14 +13,14 @@ RUN npm run build
 
 FROM node:20-alpine AS runner
 ENV NODE_ENV=production
-ENV PORT=3000
+ENV PORT=5173
 WORKDIR /app
 
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/server.js ./server.js
 
-EXPOSE 3000
+EXPOSE 5173
 CMD ["node", "server.js"]
 
 
