@@ -3,6 +3,14 @@ import { readFileSync, existsSync, createReadStream } from 'fs'
 import { extname, join } from 'path'
 
 const PORT = process.env.PORT || 5173
+// Base path sous lequel l'app est servie (aligné avec Vite 'base')
+const BASE_PATH = (() => {
+  const raw = '/intervu/'
+  let b = raw
+  if (!b.startsWith('/')) b = '/' + b
+  if (!b.endsWith('/')) b = b + '/'
+  return b
+})()
 const root = process.cwd()
 const distDir = join(root, 'dist')
 const indexHtmlPath = join(distDir, 'index.html')
@@ -31,7 +39,11 @@ function serveStatic(filePath, res) {
 
 const server = http.createServer((req, res) => {
   const urlPath = req.url.split('?')[0]
-  const filePath = join(distDir, urlPath)
+  // retire le préfixe BASE_PATH si présent
+  const servedPath = urlPath.startsWith(BASE_PATH)
+    ? urlPath.slice(BASE_PATH.length - 1) // garde le '/' initial
+    : urlPath
+  const filePath = join(distDir, servedPath)
   if (existsSync(filePath) && !filePath.endsWith('/')) {
     return serveStatic(filePath, res)
   }
