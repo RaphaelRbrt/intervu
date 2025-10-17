@@ -34,6 +34,9 @@ jobs:
         with:
           context: .
           push: true
+          build-args: |
+            API_URL=${{ secrets.API_URL }}
+            API_TOKENS=${{ secrets.API_TOKENS }}
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/intervu:latest
             ${{ secrets.DOCKER_USERNAME }}/intervu:${{ github.sha }}

@@ -6,6 +6,10 @@ RUN npm ci --no-audit --no-fund
 
 FROM node:20-alpine AS builder
 ENV NEXT_TELEMETRY_DISABLED=1
+ARG API_URL
+ENV VITE_API_URL=${API_URL}
+ARG API_TOKENS
+ENV VITE_API_TOKENS=${API_TOKENS}
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
